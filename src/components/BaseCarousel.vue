@@ -2,10 +2,10 @@
   <ul
     class="base-carousel"
     :id="CAROUSEL_ID"
-    @mousedown.prevent="onMouseDown"
-    @mouseup="onMouseUp"
-    @mousemove="onMouseMove"
-    @mouseleave="onMouseLeave"
+    @mousedown.prevent="onPressCarousel"
+    @mouseup="onUnpressCarousel"
+    @mousemove="onMoveCarousel"
+    @mouseleave="onLeaveCarousel"
     :style="{...getCarouselMoveToNext, ...getItemWidthForCSS}"
   >
     <li
@@ -13,7 +13,7 @@
       v-for="(item, index) in items"
       :key="index"
       :data-carousel-item-index="index"
-      :data-carousel-has-mouse-down="parseInt(index) === CAROUSEL_ITEM_ACTIVE && hasMouseDown"
+      :data-carousel-has-mouse-down="parseInt(index) === CAROUSEL_ITEM_ACTIVE && hasPressCarousel"
       :data-carousel-item-active="parseInt(index) === CAROUSEL_ITEM_ACTIVE ? true : false"
     >
       <button
@@ -59,10 +59,10 @@ export default {
       CAROUSEL_ID: (_ => `base-carousel-${crypto.getRandomValues(new Uint32Array(1))}`)(),
       CAROUSEL_DOM: null,
       CAROUSEL_ITEM_ACTIVE: 0,
-      hasMouseDown: false,
-      currentMouseXPress: 0,
-      moveOnMouseX: 0,
-      moveOnMouseXDirection: ''
+      hasPressCarousel: false,
+      currentX: 0,
+      moveCarouselX: 0,
+      moveCarouselXDirection: ''
     }
   },
   props: {
@@ -88,7 +88,7 @@ export default {
       return this.itemWidth * this.CAROUSEL_ITEM_ACTIVE
     },
     getMoveOnMouse () {
-      return Math.abs(this.getTranslateValue + this.moveOnMouseX)
+      return Math.abs(this.getTranslateValue + this.moveCarouselX)
     },
     getCarouselMoveToNext () {
       return {
@@ -102,76 +102,54 @@ export default {
     }
   },
   methods: {
-    InterfaceNavigationCarousel (name, message) {
-      this.name = name
-      this.message = message
-    },
-    parameterFunctionError (param, fn) {
-      throw new ReferenceError(`parameter ${param} missing in ${fn}`)
-    },
-    testNumberOptions (operationCondition) {
-      const options = {
-        '>': (value, compare) => value > compare,
-        '>=': (value, compare) => value >= compare,
-        '===': (value, compare) => value === compare,
-        '<': (value, compare) => value < compare,
-        '<=': (value, compare) => value <= compare
-      }
+    getCurrentX (event) {
+      const type = event.type
 
-      return options[operationCondition] || null
-    },
-    testNumber (
-      operationCondition = this.parameterFunctionError('operationCondition', 'testNumber'),
-      value = this.parameterFunctionError('value', 'testNumber'),
-      compare = this.parameterFunctionError('compare', 'testNumber')) {
-      try {
-        const validOperationRegister = new RegExp('^>=?$|^===$|^<=?$', 'g')
-        const validOperationRegisterOption = this.testNumberOptions(operationCondition)
-
-        if (operationCondition.match(validOperationRegister) === null) {
-          throw new Error('invalid operationCondition')
-        }
-
-        return validOperationRegisterOption(value, compare)
-      } catch (error) {
-
-      }
-    },
-    onMouseDown (event) {
-      this.hasMouseDown = true
-      this.currentMouseXPress = event.clientX
-
-      if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.currentMouseXPress) {
-        this.moveOnMouseXDirection = 'left'
+      if (type.includes('touchend')) {
+        return event.changedTouches[0].clientX
+      } else if (type.includes('touch')) {
+        return event.touches[0].clientX
+      } else if (type.includes('mouse')) {
+        return event.clientX
       } else {
-        this.moveOnMouseXDirection = 'right'
+        throw new Error('event not expect in getCurrentX')
       }
     },
     getHasLastCarouselItem (deslocation) {
       return ((this.getTranslateValue * -1) + deslocation) < (this.getTotalCarouselWidth * -1)
     },
-    onMouseMove (event) {
-      if (this.hasMouseDown) {
-        const deslocation = event.clientX - this.currentMouseXPress
+    onPressCarousel (event) {
+      this.hasPressCarousel = true
+      this.currentX = this.getCurrentX(event)
+
+      if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.currentX) {
+        this.moveCarouselXDirection = 'left'
+      } else {
+        this.moveCarouselXDirection = 'right'
+      }
+    },
+    onMoveCarousel (event) {
+      if (this.hasPressCarousel) {
+        const deslocation = this.getCurrentX(event) - this.currentX
 
         if (deslocation < this.getTranslateValue && !this.getHasLastCarouselItem(deslocation)) {
-          this.moveOnMouseX = deslocation * -1
+          this.moveCarouselX = deslocation * -1
         } else {
-          this.moveOnMouseX = 0
+          this.moveCarouselX = 0
         }
       }
     },
-    onMouseLeave (event) {
-      if (this.hasMouseDown) {
-        this.onMouseUp(event)
+    onLeaveCarousel (event) {
+      if (this.hasPressCarousel) {
+        this.onUnpressCarousel(event)
       }
     },
-    onMouseUp (event) {
+    onUnpressCarousel (event) {
       let hasItemToMove = false
-      this.hasMouseDown = false
+      this.hasPressCarousel = false
 
-      if (this.moveOnMouseXDirection === 'right') {
-        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > event.clientX) {
+      if (this.moveCarouselXDirection === 'right') {
+        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.getCurrentX(event)) {
           hasItemToMove = this.CAROUSEL_ITEM_ACTIVE < this.items.length - 1
 
           if (hasItemToMove) {
@@ -180,8 +158,8 @@ export default {
         }
 
         this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
-      } else if (this.moveOnMouseXDirection === 'left') {
-        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) < event.clientX) {
+      } else if (this.moveCarouselXDirection === 'left') {
+        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) < this.getCurrentX(event)) {
           hasItemToMove = this.CAROUSEL_ITEM_ACTIVE - 1 >= 0
 
           if (hasItemToMove) {
@@ -191,14 +169,12 @@ export default {
 
         this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
       }
-      this.moveOnMouseX = 0
+      this.moveCarouselX = 0
     },
     onNavigationCarousel (event) {
       try {
         const htmlReference = event.target.parentNode
-
         const htmlReferenceTagName = htmlReference.nodeName.toLowerCase()
-
         const htmlReferenceAttributeDataCarouselItemIndex = htmlReference.getAttribute('data-carousel-item-index')
 
         if (htmlReferenceTagName !== 'li') {
@@ -223,32 +199,9 @@ export default {
         throw error
       }
     },
-    onTouchEnd (event) {
-      let hasItemToMove = false
-      this.hasMouseDown = false
-
-      if (this.moveOnMouseXDirection === 'right') {
-        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > event.changedTouches[0].clientX) {
-          hasItemToMove = this.CAROUSEL_ITEM_ACTIVE < this.items.length - 1
-
-          if (hasItemToMove) {
-            this.CAROUSEL_ITEM_ACTIVE++
-          }
-        }
-
-        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
-      } else if (this.moveOnMouseXDirection === 'left') {
-        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) < event.changedTouches[0].clientX) {
-          hasItemToMove = this.CAROUSEL_ITEM_ACTIVE - 1 >= 0
-
-          if (hasItemToMove) {
-            this.CAROUSEL_ITEM_ACTIVE--
-          }
-        }
-
-        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
-      }
-      this.moveOnMouseX = 0
+    InterfaceNavigationCarousel (name, message) {
+      this.name = name
+      this.message = message
     }
   },
   mounted () {
@@ -258,38 +211,10 @@ export default {
       event.target.style.transition = 'none'
     })
 
-    this.CAROUSEL_DOM.addEventListener('touchstart', (event) => {
-      console.log(event.type)
-
-      this.hasMouseDown = true
-      this.currentMouseXPress = event.touches[0].clientX
-
-      if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.currentMouseXPress) {
-        this.moveOnMouseXDirection = 'left'
-      } else {
-        this.moveOnMouseXDirection = 'right'
-      }
-    })
-
-    this.CAROUSEL_DOM.addEventListener('touchmove', (event) => {
-      if (this.hasMouseDown) {
-        const deslocation = event.touches[0].clientX - this.currentMouseXPress
-
-        if (deslocation < this.getTranslateValue && !this.getHasLastCarouselItem(deslocation)) {
-          this.moveOnMouseX = deslocation * -1
-        } else {
-          this.moveOnMouseX = 0
-        }
-      }
-    })
-
-    this.CAROUSEL_DOM.addEventListener('touchcancel', (event) => {
-      if (this.hasMouseDown) {
-        this.onTouchEnd(event)
-      }
-    })
-
-    this.CAROUSEL_DOM.addEventListener('touchend', this.onTouchEnd)
+    this.CAROUSEL_DOM.addEventListener('touchstart', this.onPressCarousel)
+    this.CAROUSEL_DOM.addEventListener('touchmove', this.onMoveCarousel)
+    this.CAROUSEL_DOM.addEventListener('touchcancel', this.onLeaveCarousel)
+    this.CAROUSEL_DOM.addEventListener('touchend', this.onUnpressCarousel)
   }
 }
 </script>
@@ -370,5 +295,4 @@ export default {
   .base-carousel__actions__nav__item[data-carousel-item-active] > button {
     background-color: #fff;
   }
-
 </style>
