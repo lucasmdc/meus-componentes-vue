@@ -222,6 +222,33 @@ export default {
 
         throw error
       }
+    },
+    onTouchEnd (event) {
+      let hasItemToMove = false
+      this.hasMouseDown = false
+
+      if (this.moveOnMouseXDirection === 'right') {
+        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > event.changedTouches[0].clientX) {
+          hasItemToMove = this.CAROUSEL_ITEM_ACTIVE < this.items.length - 1
+
+          if (hasItemToMove) {
+            this.CAROUSEL_ITEM_ACTIVE++
+          }
+        }
+
+        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
+      } else if (this.moveOnMouseXDirection === 'left') {
+        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) < event.changedTouches[0].clientX) {
+          hasItemToMove = this.CAROUSEL_ITEM_ACTIVE - 1 >= 0
+
+          if (hasItemToMove) {
+            this.CAROUSEL_ITEM_ACTIVE--
+          }
+        }
+
+        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
+      }
+      this.moveOnMouseX = 0
     }
   },
   mounted () {
@@ -230,6 +257,39 @@ export default {
     this.CAROUSEL_DOM.addEventListener('transitionend', (event) => {
       event.target.style.transition = 'none'
     })
+
+    this.CAROUSEL_DOM.addEventListener('touchstart', (event) => {
+      console.log(event.type)
+
+      this.hasMouseDown = true
+      this.currentMouseXPress = event.touches[0].clientX
+
+      if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.currentMouseXPress) {
+        this.moveOnMouseXDirection = 'left'
+      } else {
+        this.moveOnMouseXDirection = 'right'
+      }
+    })
+
+    this.CAROUSEL_DOM.addEventListener('touchmove', (event) => {
+      if (this.hasMouseDown) {
+        const deslocation = event.touches[0].clientX - this.currentMouseXPress
+
+        if (deslocation < this.getTranslateValue && !this.getHasLastCarouselItem(deslocation)) {
+          this.moveOnMouseX = deslocation * -1
+        } else {
+          this.moveOnMouseX = 0
+        }
+      }
+    })
+
+    this.CAROUSEL_DOM.addEventListener('touchcancel', (event) => {
+      if (this.hasMouseDown) {
+        this.onTouchEnd(event)
+      }
+    })
+
+    this.CAROUSEL_DOM.addEventListener('touchend', this.onTouchEnd)
   }
 }
 </script>
