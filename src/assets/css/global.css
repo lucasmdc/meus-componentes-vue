@@ -1,0 +1,46 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+#app {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+
+button,
+input {
+    outline: none;
+}
+
+li {
+    list-style: none;
+}
+
+/* tag for use icon */
+i {
+    background-position: center;
+    background-size: 100%;
+    display: inline-block;
+    font-style: normal;
+    height: 24px;
+    text-indent: -9999px;
+    vertical-align: middle;
+    width: 24px;
+}
+
+.icon-bed {
+    background-image: url('../bed.svg')
+}
+
+.icon-key{
+    background-image: url('../key.svg')
+}
+
+.icon-pin {
+    background-image: url('../pin.svg')
+}
