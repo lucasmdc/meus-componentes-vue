@@ -25,6 +25,7 @@
 import BaseCard from './components/BaseCard'
 import BaseList from './components/BaseList'
 import BaseCarousel from './components/BaseCarousel'
+import { testValueIs } from './utils/tests'
 
 export default {
   name: 'App',
@@ -47,11 +48,6 @@ export default {
       this.text = text
       this.photos = photos
       this.details = details
-    },
-    testValueIs (value, type) {
-      const result = Object.prototype.toString.call(value).toLowerCase()
-
-      return result.substring(1, result.length - 1).split(' ')[1] === type
     },
     formatingDetailsItems (value) {
       const sliced = value.slice(0, value.length - 1)
@@ -85,7 +81,7 @@ export default {
               const products = JSON.parse(decoder.decode(value)).products.splice(0, 5)
 
               products.forEach(product => {
-                if (this.testValueIs(product.address.geo_location, 'object')) {
+                if (testValueIs(product.address.geo_location, 'object')) {
                   // photos
                   const photos = product.photos.map(photo => {
                     return {
@@ -98,7 +94,7 @@ export default {
                   // end-photos
 
                   // unitsEnSuites
-                  const unitsEnSuites = this.testValueIs(product.units.en_suites, 'array')
+                  const unitsEnSuites = testValueIs(product.units.en_suites, 'array')
                     ? JSON.parse(JSON.stringify(product.units.en_suites))
                     : [product.units.en_suites]
 
@@ -110,7 +106,7 @@ export default {
                   // end-unitsEnSuites
 
                   // usableAreas
-                  const usableAreas = this.testValueIs(product.units.usable_areas, 'array')
+                  const usableAreas = testValueIs(product.units.usable_areas, 'array')
                     ? JSON.parse(JSON.stringify(product.units.usable_areas))
                     : [product.units.usable_areas]
 
