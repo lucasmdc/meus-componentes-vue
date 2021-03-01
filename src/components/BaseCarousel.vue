@@ -61,8 +61,7 @@ export default {
       CAROUSEL_ITEM_ACTIVE: 0,
       hasPressCarousel: false,
       currentX: 0,
-      moveCarouselX: 0,
-      moveCarouselXDirection: ''
+      moveCarouselX: 0
     }
   },
   props: {
@@ -99,10 +98,19 @@ export default {
       return {
         right: this.getTranslateValue !== 0 ? `-${this.getTranslateValue - 16}px` : '16px'
       }
+    },
+    getMiddleX () {
+      return (this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft
+    },
+    getMoveCarouselXDirection () {
+      return this.hasOverMiddleX ? 'left' : 'right'
+    },
+    hasOverMiddleX () {
+      return this.getMiddleX > this.currentX
     }
   },
   methods: {
-    getCurrentX (event) {
+    getCurrentXOf (event) {
       const type = event.type
 
       if (type.includes('touchend')) {
@@ -115,24 +123,27 @@ export default {
         throw new Error('event not expect in getCurrentX')
       }
     },
+    setCurrentX (value) {
+      this.currentX = value
+    },
+    setCarouselTransition (seconds = 0.2) {
+      this.CAROUSEL_DOM.style.transition = `transform ${seconds}s linear`
+    },
     getHasLastCarouselItem (deslocation) {
       return ((this.getTranslateValue * -1) + deslocation) < (this.getTotalCarouselWidth * -1)
     },
     onPressCarousel (event) {
-      this.hasPressCarousel = true
-      this.currentX = this.getCurrentX(event)
+      const currentX = this.getCurrentXOf(event)
+      this.setCurrentX(currentX)
 
-      if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.currentX) {
-        this.moveCarouselXDirection = 'left'
-      } else {
-        this.moveCarouselXDirection = 'right'
-      }
+      this.hasPressCarousel = true
     },
     onMoveCarousel (event) {
       if (this.hasPressCarousel) {
-        const deslocation = this.getCurrentX(event) - this.currentX
+        const deslocation = this.getCurrentXOf(event) - this.currentX
+        const hasDeslocation = deslocation < this.getTranslateValue
 
-        if (deslocation < this.getTranslateValue && !this.getHasLastCarouselItem(deslocation)) {
+        if (hasDeslocation && !this.getHasLastCarouselItem(deslocation)) {
           this.moveCarouselX = deslocation * -1
         } else {
           this.moveCarouselX = 0
@@ -145,31 +156,38 @@ export default {
       }
     },
     onUnpressCarousel (event) {
-      let hasItemToMove = false
       this.hasPressCarousel = false
 
-      if (this.moveCarouselXDirection === 'right') {
-        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) > this.getCurrentX(event)) {
-          hasItemToMove = this.CAROUSEL_ITEM_ACTIVE < this.items.length - 1
-
-          if (hasItemToMove) {
-            this.CAROUSEL_ITEM_ACTIVE++
-          }
-        }
-
-        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
-      } else if (this.moveCarouselXDirection === 'left') {
-        if (((this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft) < this.getCurrentX(event)) {
-          hasItemToMove = this.CAROUSEL_ITEM_ACTIVE - 1 >= 0
-
-          if (hasItemToMove) {
-            this.CAROUSEL_ITEM_ACTIVE--
-          }
-        }
-
-        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
+      const rules = {
+        right: this.moveCarouselToRight,
+        left: this.moveCarouselToLeft
       }
+
+      rules[this.getMoveCarouselXDirection](event)
+
       this.moveCarouselX = 0
+    },
+    moveCarouselToRight (event) {
+      if (this.getMiddleX > this.getCurrentXOf(event)) {
+        const hasItemToMove = this.CAROUSEL_ITEM_ACTIVE < this.items.length - 1
+
+        if (hasItemToMove) {
+          this.CAROUSEL_ITEM_ACTIVE++
+        }
+      }
+
+      this.setCarouselTransition()
+    },
+    moveCarouselToLeft (event) {
+      if (this.getMiddleX < this.getCurrentXOf(event)) {
+        const hasItemToMove = this.CAROUSEL_ITEM_ACTIVE - 1 >= 0
+
+        if (hasItemToMove) {
+          this.CAROUSEL_ITEM_ACTIVE--
+        }
+      }
+
+      this.setCarouselTransition()
     },
     onNavigationCarousel (event) {
       try {
@@ -187,7 +205,7 @@ export default {
 
         this.CAROUSEL_ITEM_ACTIVE = parseInt(htmlReferenceAttributeDataCarouselItemIndex)
 
-        this.CAROUSEL_DOM.style.transition = 'transform .2s linear'
+        this.setCarouselTransition()
       } catch (error) {
         if (error instanceof this.InterfaceNavigationCarousel) {
           const interfaceNavigationCarousel = new Error(error.message)
