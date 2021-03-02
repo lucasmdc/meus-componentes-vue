@@ -6,20 +6,20 @@
     @mouseup="onUnpressCarousel"
     @mousemove="onMoveCarousel"
     @mouseleave="onLeaveCarousel"
-    :style="{...getCarouselMoveToNext, ...getItemWidthForCSS}"
+    :style="{...deslocateCarouselTo, ...transforItemWidthPropToCssVariable}"
   >
     <li
       class="base-carousel__item"
       v-for="(item, index) in items"
       :key="index"
       :data-carousel-item-index="index"
-      :data-carousel-has-mouse-down="parseInt(index) === CAROUSEL_ITEM_ACTIVE && hasPressCarousel"
+      :data-carousel-has-mouse-down="parseInt(index) === CAROUSEL_ITEM_ACTIVE && hasPressedCarousel"
       :data-carousel-item-active="parseInt(index) === CAROUSEL_ITEM_ACTIVE ? true : false"
     >
       <button
         class="base-carousel__like"
         @click="item.isLiked = !item.isLiked"
-        :style="getCarouselMoveToNextActions"
+        :style="deslocateCarouselActionsTo"
       >
         <i
           class="like-icon"
@@ -33,7 +33,7 @@
     </li>
     <li
       class="base-carousel__actions"
-      :style="getCarouselMoveToNextActions"
+      :style="deslocateCarouselActionsTo"
     >
       <ul class="base-carousel__actions__nav">
         <li
@@ -59,8 +59,8 @@ export default {
       CAROUSEL_ID: (_ => `base-carousel-${crypto.getRandomValues(new Uint32Array(1))}`)(),
       CAROUSEL_DOM: null,
       CAROUSEL_ITEM_ACTIVE: 0,
-      hasPressCarousel: false,
-      currentX: 0,
+      hasPressedCarousel: false,
+      currentCarouselPressedX: 0,
       moveCarouselX: 0
     }
   },
@@ -75,38 +75,38 @@ export default {
     }
   },
   computed: {
-    getItemWidthForCSS () {
+    transforItemWidthPropToCssVariable () {
       return {
         '--item-width': `${this.itemWidth}px`
       }
     },
-    getTotalCarouselWidth () {
+    totalCarouselWidth () {
       return (this.items.length - 1) * this.itemWidth
     },
-    getTranslateValue () {
+    currentCarouselItemView () {
       return this.itemWidth * this.CAROUSEL_ITEM_ACTIVE
     },
-    getMoveOnMouse () {
-      return Math.abs(this.getTranslateValue + this.moveCarouselX)
+    deslocateCarousel () {
+      return Math.abs(this.currentCarouselItemView + this.moveCarouselX)
     },
-    getCarouselMoveToNext () {
+    deslocateCarouselTo () {
       return {
-        transform: `translateX(-${this.getMoveOnMouse}px)`
+        transform: `translateX(-${this.deslocateCarousel}px)`
       }
     },
-    getCarouselMoveToNextActions () {
+    deslocateCarouselActionsTo () {
       return {
-        right: this.getTranslateValue !== 0 ? `-${this.getTranslateValue - 16}px` : '16px'
+        right: this.currentCarouselItemView !== 0 ? `-${this.currentCarouselItemView - 16}px` : '16px'
       }
     },
-    getMiddleX () {
+    middleCarouselItemX () {
       return (this.itemWidth / 2) + this.CAROUSEL_DOM.offsetLeft
     },
-    getMoveCarouselXDirection () {
-      return this.hasOverMiddleX ? 'left' : 'right'
+    moveCarouselXDirection () {
+      return this.hasOverMiddleCarouselItemX ? 'left' : 'right'
     },
-    hasOverMiddleX () {
-      return this.getMiddleX > this.currentX
+    hasOverMiddleCarouselItemX () {
+      return this.middleCarouselItemX > this.currentCarouselPressedX
     }
   },
   methods: {
@@ -123,25 +123,25 @@ export default {
         throw new Error('event not expect in getCurrentX')
       }
     },
-    setCurrentX (value) {
-      this.currentX = value
+    setCurrentCarouselPressedX (value) {
+      this.currentCarouselPressedX = value
     },
     setCarouselTransition (seconds = 0.2) {
       this.CAROUSEL_DOM.style.transition = `transform ${seconds}s linear`
     },
     getHasLastCarouselItem (deslocation) {
-      return ((this.getTranslateValue * -1) + deslocation) < (this.getTotalCarouselWidth * -1)
+      return ((this.currentCarouselItemView * -1) + deslocation) < (this.totalCarouselWidth * -1)
     },
     onPressCarousel (event) {
-      const currentX = this.getCurrentXOf(event)
-      this.setCurrentX(currentX)
+      const currentCarouselPressedX = this.getCurrentXOf(event)
+      this.setCurrentCarouselPressedX(currentCarouselPressedX)
 
-      this.hasPressCarousel = true
+      this.hasPressedCarousel = true
     },
     onMoveCarousel (event) {
-      if (this.hasPressCarousel) {
-        const deslocation = this.getCurrentXOf(event) - this.currentX
-        const hasDeslocation = deslocation < this.getTranslateValue
+      if (this.hasPressedCarousel) {
+        const deslocation = this.getCurrentXOf(event) - this.currentCarouselPressedX
+        const hasDeslocation = deslocation < this.currentCarouselItemView
 
         if (hasDeslocation && !this.getHasLastCarouselItem(deslocation)) {
           this.moveCarouselX = deslocation * -1
@@ -151,24 +151,24 @@ export default {
       }
     },
     onLeaveCarousel (event) {
-      if (this.hasPressCarousel) {
+      if (this.hasPressedCarousel) {
         this.onUnpressCarousel(event)
       }
     },
     onUnpressCarousel (event) {
-      this.hasPressCarousel = false
+      this.hasPressedCarousel = false
 
       const rules = {
         right: this.moveCarouselToRight,
         left: this.moveCarouselToLeft
       }
 
-      rules[this.getMoveCarouselXDirection](event)
+      rules[this.moveCarouselXDirection](event)
 
       this.moveCarouselX = 0
     },
     moveCarouselToRight (event) {
-      if (this.getMiddleX > this.getCurrentXOf(event)) {
+      if (this.middleCarouselItemX > this.getCurrentXOf(event)) {
         const hasItemToMove = this.CAROUSEL_ITEM_ACTIVE < this.items.length - 1
 
         if (hasItemToMove) {
@@ -179,7 +179,7 @@ export default {
       this.setCarouselTransition()
     },
     moveCarouselToLeft (event) {
-      if (this.getMiddleX < this.getCurrentXOf(event)) {
+      if (this.middleCarouselItemX < this.getCurrentXOf(event)) {
         const hasItemToMove = this.CAROUSEL_ITEM_ACTIVE - 1 >= 0
 
         if (hasItemToMove) {
