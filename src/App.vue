@@ -1,23 +1,51 @@
 <template>
   <div id="app">
-    <BaseCard
-      v-for="(product, index) in products"
-      :key="index"
-      :title="product.name"
-      :text="product.text"
-      :cardWidth="300"
-    >
-      <template v-slot:baseCardTop>
-        <BaseCarousel
-          :items="product.photos"
-          :itemWidth="300"
-        />
-      </template>
-      <template v-slot:baseCardContentAppend>
-        <BaseList :items="product.details" />
-      </template>
-      {{ products }}
-    </BaseCard>
+    <h2>BaseCarousel</h2>
+    <BaseCarousel
+      :items="banners"
+      :itemWidth="bannerSize"
+    />
+    <article>
+      <h2>BaseCard + BaseCarousel</h2>
+      <div class="article__body">
+        <BaseCard
+          v-for="(product, index) in products"
+          :key="index"
+          :title="product.name"
+          :text="product.text"
+          :cardWidth="productSize"
+        >
+          <template v-slot:baseCardTop>
+            <BaseCarousel
+              :items="product.photos"
+              :itemWidth="productSize"
+            />
+          </template>
+        </BaseCard>
+      </div>
+    </article>
+    <article>
+      <h2>BaseCard + BaseCarousel + BaseList</h2>
+      <div class="article__body">
+        <BaseCard
+          v-for="(product, index) in productsWithDetails"
+          :key="index"
+          :title="product.name"
+          :text="product.text"
+          :cardWidth="productSize"
+        >
+          <template v-slot:baseCardTop>
+            <BaseCarousel
+              :items="product.photos"
+              :itemWidth="productSize"
+            />
+          </template>
+          <template v-slot:baseCardContentAppend>
+            <BaseList :items="product.details" />
+          </template>
+        </BaseCard>
+      </div>
+    </article>
   </div>
 </template>
 
@@ -25,7 +53,6 @@
 import BaseCard from './components/BaseCard'
 import BaseList from './components/BaseList'
 import BaseCarousel from './components/BaseCarousel'
-import { testValueIs } from './utils/tests'
 
 export default {
   name: 'App',
@@ -37,122 +64,176 @@ export default {
   data () {
     return {
       products: [],
-      aliasProductsImages: [],
-      aliasProductsEnSuites: [],
-      aliasProductsUsableAreas: []
+      banners: [],
+      details: [],
+      productSize: 300,
+      bannerSize: 1440
     }
   },
-  methods: {
-    CreateProductInterface (name, text, photos, details) {
-      this.name = name
-      this.text = text
-      this.photos = photos
-      this.details = details
-    },
-    formatingDetailsItems (value) {
-      const sliced = value.slice(0, value.length - 1)
-
-      if (sliced.length > 0) {
-        const joined = sliced.join(' , ')
-        const firstAndLastHasSameValue = value[0] === value[value.length - 1]
-
-        if (!firstAndLastHasSameValue) {
-          return joined.concat(' e ' + value[value.length - 1])
+  computed: {
+    productsWithDetails () {
+      return this.products.map((elem, index) => {
+        return {
+          ...elem,
+          details: this.details
         }
-
-        return joined
-      }
-
-      return value
+      })
     }
   },
   created () {
-    try {
-      const decoder = new TextDecoder('utf-8')
+    const productsToAppend = [{
+      name: 'Fotos incríveis #1',
+      text: 'Imagens Aleatórias',
+      details: [],
+      photos: [
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=1`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=2`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=3`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=4`,
+          isLiked: false
+        }
+      ]
+    },
+    {
+      name: 'Fotos incríveis #2',
+      text: 'Imagens Aleatórias',
+      details: [],
+      photos: [
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=5`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=6`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=7`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=8`,
+          isLiked: false
+        }
+      ]
+    },
+    {
+      name: 'Fotos incríveis #3',
+      text: 'Imagens Aleatórias',
+      details: [],
+      photos: [
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=9`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=10`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=11`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=12`,
+          isLiked: false
+        }
+      ]
+    },
+    {
+      name: 'Fotos incríveis #4',
+      text: 'Imagens Aleatórias',
+      details: [],
+      photos: [
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=13`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=14`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=15`,
+          isLiked: false
+        },
+        {
+          imgSrc: `https://picsum.photos/${this.productSize}?random=16`,
+          isLiked: false
+        }
+      ]
+    }]
 
-      fetch('https://static-content.bivilabs.com.br/challenges/products.json')
-        .then(response => response.body)
-        .then(body => {
-          const reader = body.getReader()
+    const bannersToAppend = [
+      {
+        imgSrc: 'https://picsum.photos/1920/500?random=13',
+        isLiked: false
+      },
+      {
+        imgSrc: 'https://picsum.photos/1920/500?random=14',
+        isLiked: false
+      },
+      {
+        imgSrc: 'https://picsum.photos/1920/500?random=15',
+        isLiked: false
+      },
+      {
+        imgSrc: 'https://picsum.photos/1920/500?random=16',
+        isLiked: false
+      }
+    ]
 
-          reader
-            .read()
-            .then(({ value, done }) => {
-              const products = JSON.parse(decoder.decode(value)).products.splice(0, 5)
+    const detailsToAppend = [
+      {
+        icon: 'icon-hash',
+        text: 'texto de descrição 1'
+      },
+      {
+        icon: 'icon-hash',
+        text: 'texto de descrição 2'
+      },
+      {
+        icon: 'icon-hash',
+        text: 'texto de descrição "n"'
+      }
+    ]
 
-              products.forEach(product => {
-                if (testValueIs(product.address.geo_location, 'object')) {
-                  // photos
-                  const photos = product.photos.map(photo => {
-                    return {
-                      imgSrc: photo,
-                      isLiked: false
-                    }
-                  })
+    this.products.push(...productsToAppend)
+    this.banners.push(...bannersToAppend)
+    this.details.push(...detailsToAppend)
 
-                  this.aliasProductsImages.push(photos)
-                  // end-photos
-
-                  // unitsEnSuites
-                  const unitsEnSuites = testValueIs(product.units.en_suites, 'array')
-                    ? JSON.parse(JSON.stringify(product.units.en_suites))
-                    : [product.units.en_suites]
-
-                  const validUnitsEnSuites = unitsEnSuites.filter(enSuite => {
-                    return !!enSuite
-                  })
-
-                  this.aliasProductsEnSuites.push(validUnitsEnSuites)
-                  // end-unitsEnSuites
-
-                  // usableAreas
-                  const usableAreas = testValueIs(product.units.usable_areas, 'array')
-                    ? JSON.parse(JSON.stringify(product.units.usable_areas))
-                    : [product.units.usable_areas]
-
-                  const validUsableAreas = usableAreas.filter(usableArea => {
-                    return usableArea > 10
-                  })
-
-                  this.aliasProductsUsableAreas.push(validUsableAreas)
-                  // end-usableAreas
-
-                  // datails
-                  const { city, district } = product.address
-                  const address = `
-                    ${city}<br>
-                    <span style="font-size:14px">${district}</span>
-                  `
-
-                  const details = [
-                    {
-                      icon: 'icon-key',
-                      text: `Apartamentos de ${this.formatingDetailsItems(validUsableAreas)}m²`
-                    },
-                    {
-                      icon: 'icon-bed',
-                      text: `
-                        ${this.formatingDetailsItems(validUnitsEnSuites)}
-                        suítes`
-                    },
-                    {
-                      icon: 'icon-pin',
-                      text: 'Localização Privilegiada'
-                    }
-                  ]
-                  // end-datails
-
-                  this.products.push(new this.CreateProductInterface(product.name, address, photos, details))
-                }
-              })
-            })
-        })
-    } catch (error) {
-
-    }
+    window.addEventListener('resize', (event) => {
+      this.bannerSize = event.target.innerWidth
+    })
   }
 }
 </script>
 
-<style>
+<style scoped>
+  h2 {
+    font-size: 48px;
+    margin: 32px 0;
+    line-height: 1.1;
+    text-align: center;
+  }
+
+  article {
+    padding: 0 15px;
+    width: 100%;
+  }
+
+  article .article__body {
+    display: flex;
+    justify-content: space-evenly;
+  }
 </style>
