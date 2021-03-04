@@ -240,11 +240,8 @@ export default {
 <style scoped>
   img {
     display: block;
-    width: var(--item-width);
-  }
-
-  i {
-    text-indent: 0;
+    max-width: var(--item-width);
+    width: 100vw;
   }
 
   [data-carousel-has-mouse-down] {
@@ -266,16 +263,40 @@ export default {
   .base-carousel {
     display: flex;
     position: relative;
-    max-width: var(--item-width);
     width: 100%;
   }
 
   .base-carousel__like {
     background-color: transparent;
     border: none;
+    border-top: 4px solid #ccc;
+    padding: 8px 8px 0;
     position: absolute;
     right: 16px;
-    top: 16px;
+    top: 0;
+    z-index: 2;
+  }
+
+  .base-carousel__like:after,
+  .base-carousel__like:before {
+    border-top: 76px solid #aaa;
+    bottom: -44px;
+    content: '';
+    display: block;
+    position: absolute;
+    transition: border-color .2s linear !important;
+    z-index: 1;
+  }
+
+
+  .base-carousel__like:after {
+    border-right: 40px solid transparent;
+    left: 0;
+  }
+
+  .base-carousel__like:before {
+    border-left: 40px solid transparent;
+    right: 0;
   }
 
   .base-carousel__like:focus,
@@ -283,13 +304,30 @@ export default {
     background-color: inherit;
   }
 
+  .base-carousel__like:focus:after,
+  .base-carousel__like:focus:before,
+  .base-carousel__like:hover:after,
+  .base-carousel__like:hover:before {
+     border-top: 76px solid #ccc;
+  }
+
+  .base-carousel__like i {
+    position: relative;
+    z-index: 3;
+  }
+
   .base-carousel__item {
     transition: transform .2s linear;
+    max-width: var(--item-width);
+    width: 100vw;
   }
 
   .base-carousel__actions {
+    background-color: #aaa;
+    border-radius: 8px;
     bottom: 32px;
     font-size: 0;
+    padding: 8px;
     position: absolute;
     right: 16px;
   }

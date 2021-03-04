@@ -63,7 +63,7 @@ export default {
   }
 
   .base-card__content {
-    box-shadow:  -8px 8px 24px -8px rgb(237 114 3 / .27);
+    box-shadow:  -8px 8px 24px -8px rgb(170 170 170 / .57);
     padding: 24px 32px;
     position: relative;
     top: -24px;
@@ -98,10 +98,10 @@ export default {
   }
 
   .base-card__content__action {
-    background-color: #ED7203;
+    background-color: transparent;
     border-radius: 16px;
-    border: none;
-    color: #fff;
+    border: 1px solid #aaa;
+    color: #aaa;
     font-weight: 700;
     line-height: 1.3;
     padding: 16px;
