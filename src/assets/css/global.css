@@ -7,14 +7,19 @@
 
 #app {
     display: flex;
-    justify-content: space-evenly;
     flex-wrap: wrap;
+    justify-content: space-evenly;
+    overflow: hidden;
 }
 
 
 button,
 input {
     outline: none;
+}
+
+button {
+    cursor: pointer;
 }
 
 li {
@@ -28,19 +33,12 @@ i {
     display: inline-block;
     font-style: normal;
     height: 24px;
-    text-indent: -9999px;
+    line-height: 1;
     vertical-align: middle;
     width: 24px;
 }
 
-.icon-bed {
-    background-image: url('../bed.svg')
-}
-
-.icon-key{
-    background-image: url('../key.svg')
-}
-
-.icon-pin {
-    background-image: url('../pin.svg')
+.icon-hash:before {
+    content: '#';
+    font-size: 24px;
 }
