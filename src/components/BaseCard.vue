@@ -52,6 +52,7 @@ export default {
     background-color: #fff;
     display: flex;
     flex-direction: column;
+    margin: 0 12px 24px;
     width: var(--card-width)
   }
 
@@ -62,11 +63,15 @@ export default {
     overflow: hidden;
   }
 
+  .base-card__top {
+    border-radius: 16px 16px 0 0;
+  }
+
   .base-card__content {
-    box-shadow:  -8px 8px 24px -8px rgb(170 170 170 / .57);
+    box-shadow:  -4px 4px 24px -4px rgb(170 170 170 / .57);
+    border-radius: 0 0 16px 16px;
     padding: 24px 32px;
     position: relative;
-    top: -24px;
     z-index: 1;
   }
 

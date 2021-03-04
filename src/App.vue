@@ -2,7 +2,7 @@
   <div id="app">
     <h2>BaseCarousel</h2>
     <BaseCarousel
-      :items="banners"
+      :items="changeBannerImagesByViewScreen"
       :itemWidth="bannerSize"
     />
     <article>
@@ -67,7 +67,7 @@ export default {
       banners: [],
       details: [],
       productSize: 300,
-      bannerSize: 1440
+      bannerSize: document.documentElement.clientWidth
     }
   },
   computed: {
@@ -78,6 +78,13 @@ export default {
           details: this.details
         }
       })
+    },
+    checkViewScreen () {
+      console.log('entrouuuuu')
+      return this.bannerSize > 1024 ? 'desktop' : 'mobile'
+    },
+    changeBannerImagesByViewScreen () {
+      return this.banners[0][this.checkViewScreen] || []
     }
   },
   created () {
@@ -174,24 +181,44 @@ export default {
       ]
     }]
 
-    const bannersToAppend = [
-      {
-        imgSrc: 'https://picsum.photos/1920/500?random=13',
-        isLiked: false
-      },
-      {
-        imgSrc: 'https://picsum.photos/1920/500?random=14',
-        isLiked: false
-      },
-      {
-        imgSrc: 'https://picsum.photos/1920/500?random=15',
-        isLiked: false
-      },
-      {
-        imgSrc: 'https://picsum.photos/1920/500?random=16',
-        isLiked: false
-      }
-    ]
+    const bannersToAppend = {
+      desktop: [
+        {
+          imgSrc: 'https://picsum.photos/1920/500?random=13',
+          isLiked: false
+        },
+        {
+          imgSrc: 'https://picsum.photos/1920/500?random=14',
+          isLiked: false
+        },
+        {
+          imgSrc: 'https://picsum.photos/1920/500?random=15',
+          isLiked: false
+        },
+        {
+          imgSrc: 'https://picsum.photos/1920/500?random=16',
+          isLiked: false
+        }
+      ],
+      mobile: [
+        {
+          imgSrc: 'https://picsum.photos/1024/500?random=13',
+          isLiked: false
+        },
+        {
+          imgSrc: 'https://picsum.photos/1024/500?random=14',
+          isLiked: false
+        },
+        {
+          imgSrc: 'https://picsum.photos/1024/500?random=15',
+          isLiked: false
+        },
+        {
+          imgSrc: 'https://picsum.photos/1024/500?random=16',
+          isLiked: false
+        }
+      ]
+    }
 
     const detailsToAppend = [
       {
@@ -209,7 +236,7 @@ export default {
     ]
 
     this.products.push(...productsToAppend)
-    this.banners.push(...bannersToAppend)
+    this.banners.push(bannersToAppend)
     this.details.push(...detailsToAppend)
 
     window.addEventListener('resize', (event) => {
@@ -225,6 +252,7 @@ export default {
     margin: 32px 0;
     line-height: 1.1;
     text-align: center;
+    word-break: break-all;
   }
 
   article {
@@ -234,6 +262,7 @@ export default {
 
   article .article__body {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-evenly;
   }
 </style>

@@ -288,7 +288,6 @@ export default {
     z-index: 1;
   }
 
-
   .base-carousel__like:after {
     border-right: 40px solid transparent;
     left: 0;
@@ -325,7 +324,7 @@ export default {
   .base-carousel__actions {
     background-color: #aaa;
     border-radius: 8px;
-    bottom: 32px;
+    bottom: 12px;
     font-size: 0;
     padding: 8px;
     position: absolute;
