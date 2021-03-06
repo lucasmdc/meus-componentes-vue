@@ -1,5 +1,7 @@
 # meus-componentes-vue
 
+Acesse o link [meus-componentes-vue](https://lucasmdc.github.io/meus-componentes-vue/) para ver o projeto rodando
+
 ## Project setup
 ```
 npm install
